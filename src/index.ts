@@ -20,7 +20,9 @@ async function run(mode: Mode): Promise<void> {
         console.log('No shortlisted stories with curation yet — run `npm run render` first.');
         return;
       }
-      const outDir = await renderCarousels(stored, 'output/design-v6');
+      const outDir = await renderCarousels(stored, 'output/design-v6', {
+        append: false,
+      });
       console.log(`\n🖼️  Render ulang ${stored.length} post ke: ${outDir}`);
       console.log(`📋 Halaman review: ${outDir}/review.html`);
       return;

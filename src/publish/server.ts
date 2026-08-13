@@ -2,6 +2,13 @@ import { createServer } from 'node:http';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
 import { getIgAccount, publishImage } from './instagram.js';
+import { config } from '../config.js';
+import { Store } from '../ingest/store.js';
+import { runIngestion } from '../ingest/run.js';
+import { curateTopStories } from '../llm/curate.js';
+import { renderCarousels, renderCover } from '../render/carousel.js';
+import { clearImageCache } from '../render/image.js';
+import type { Curation, Story } from '../types.js';
 
 const PORT = Number(process.env.PORT ?? 8787);
 const OUTPUT_DIR = resolve(process.cwd(), 'output');
@@ -37,6 +44,63 @@ const server = createServer(async (req, res) => {
       const status = await getIgAccount();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify(status));
+    }
+
+    // Generate draft post baru (ingest + kurasi + render, auto-append).
+    if (url.pathname === '/api/regenerate' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req)) as {
+        date?: string;
+        count?: number;
+      };
+      const date = body.date ?? new Date().toISOString().slice(0, 10);
+      const count = Math.min(Math.max(body.count ?? config.curateCount, 1), 10);
+      if (!/^[\w.-]+$/.test(date)) throw new Error('param date tidak valid');
+
+      const store = new Store(config.dbPath);
+      try {
+        const ing = await runIngestion(store);
+        const results = await curateTopStories(store, count);
+        const dir = join(OUTPUT_DIR, date);
+        await renderCarousels(results, dir);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(
+          JSON.stringify({
+            ok: true,
+            fetched: ing.fetched,
+            added: ing.added,
+            posts: results.map((r) => r.story.title),
+          }),
+        );
+      } finally {
+        store.close();
+      }
+    }
+
+    // Coba ambil gambar artikel lagi untuk satu post, lalu re-render cover.
+    if (url.pathname === '/api/reimage' && req.method === 'POST') {
+      const body = JSON.parse(await readBody(req)) as {
+        date?: string;
+        postId?: string;
+      };
+      const date = body.date ?? '';
+      const postId = body.postId ?? '';
+      if (!/^[\w.-]+$/.test(date) || !/^post-\d+$/.test(postId)) {
+        throw new Error('param date/postId tidak valid');
+      }
+
+      const dir = join(OUTPUT_DIR, date, postId);
+      const meta = JSON.parse(
+        readFileSync(join(dir, 'meta.json'), 'utf8'),
+      ) as { story: Story; curation: Curation };
+
+      clearImageCache(meta.story.id);
+      const hasImage = await renderCover(
+        meta.story,
+        meta.curation,
+        join(dir, 'cover.png'),
+      );
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true, hasImage }));
     }
 
     if (url.pathname === '/api/publish' && req.method === 'POST') {

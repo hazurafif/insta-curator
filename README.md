@@ -62,8 +62,12 @@ Alur:
 npm run render             # generate post + review.html
 npm run serve              # server lokal di http://127.0.0.1:8787
 # buka http://127.0.0.1:8787/<tanggal>/review.html
-# setujui → klik 🚀 Unggah (atau Unggah semua disetujui)
 ```
+
+Halaman review juga bisa:
+- **🔄 Generate 5 post lagi** — ingest + kurasi + render batch baru (append, nggak nimpa yang lama)
+- **🖼️ Ambil gambar lagi** — kalau cover nggak dapat foto, coba fetch ulang gambar artikelnya
+- Setujui → salin caption → 🚀 Unggah (kalau auto-upload sudah aktif)
 
 Cover di-upload ke host publik (catbox/imgbb) karena Graph API butuh `image_url` publik. Coba dry-run dulu (`PUBLISH_DRY_RUN=1`), lalu ganti ke `0` kalau sudah yakin.
 

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import sharp from 'sharp';
 import type { Story } from '../types.js';
@@ -79,6 +79,15 @@ async function downloadImage(url: string, id: string): Promise<string | null> {
     return file;
   } catch {
     return null;
+  }
+}
+
+/** Hapus cache gambar satu story supaya bisa dicoba ambil ulang. */
+export function clearImageCache(id: string): void {
+  try {
+    rmSync(join(IMG_DIR, `${id}.img`), { force: true });
+  } catch {
+    /* ignore */
   }
 }
 

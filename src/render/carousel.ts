@@ -1,5 +1,6 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readdirSync, statSync } from 'node:fs';
 import { config } from '../config.js';
 import type { Curation, CurationResult, Story } from '../types.js';
 import { CANVAS, fonts, fontFactors, paletteFor, textOn, weights, type Palette } from './theme.js';
@@ -132,6 +133,12 @@ async function renderStory(
 
   svgToPng(coverSlide(curation, story, p, imageDataUri, 1), join(dir, 'cover.png'));
 
+  // Simpan meta supaya tombol "ambil gambar lagi" bisa re-render cover.
+  writeFileSync(
+    join(dir, 'meta.json'),
+    JSON.stringify({ story, curation }),
+  );
+
   // Strip any "Source/Sumber: ..." line the LLM wrote, then append the canonical URL.
   const lines = curation.caption.split('\n');
   const srcIdx = lines.findIndex((l) => /^s(umber|ource)\s*:/i.test(l.trim()));
@@ -146,21 +153,49 @@ async function renderStory(
   );
 }
 
+/** Berapa post yang sudah ada di folder output. */
+function countExistingPosts(dir: string): number {
+  try {
+    return readdirSync(dir).filter(
+      (d) => d.startsWith('post-') && statSync(join(dir, d)).isDirectory(),
+    ).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Render ulang cover untuk satu post (dipakai tombol "ambil gambar lagi"). */
+export async function renderCover(
+  story: Story,
+  curation: Curation,
+  outPath: string,
+): Promise<boolean> {
+  const img = await prepareCoverImage(story);
+  svgToPng(coverSlide(curation, story, paletteFor(0), img, 1), outPath);
+  return img !== null;
+}
+
 /** Render carousels for all curated stories into an output folder. */
 export async function renderCarousels(
   results: CurationResult[],
   outDir?: string,
+  opts: { append?: boolean } = {},
 ): Promise<string> {
   const dir = outDir ?? join('output', new Date().toISOString().slice(0, 10));
+  const append = opts.append ?? true;
+  if (!append) {
+    // Mode overwrite (iterasi desain): bersihkan folder dulu.
+    rmSync(dir, { recursive: true, force: true });
+  }
+  const start = append ? countExistingPosts(dir) + 1 : 1; // append biar post lama nggak ketimpa
   for (let i = 0; i < results.length; i++) {
-    const postDir = join(dir, `post-${String(i + 1).padStart(2, '0')}`);
+    const postDir = join(dir, `post-${String(i + start).padStart(2, '0')}`);
     rmSync(postDir, { recursive: true, force: true }); // drop stale slides from earlier design versions
     mkdirSync(postDir, { recursive: true });
     try {
-      // Semua post pakai gaya yang sama (palette post-01).
       await renderStory(results[i], paletteFor(0), postDir);
       console.log(
-        `✓ post-${String(i + 1).padStart(2, '0')} — ${results[i].story.title.slice(0, 60)}`,
+        `✓ post-${String(i + start).padStart(2, '0')} — ${results[i].story.title.slice(0, 60)}`,
       );
     } catch (e) {
       console.warn(`[warn] render "${results[i].story.title.slice(0, 40)}":`, (e as Error).message);

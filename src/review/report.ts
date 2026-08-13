@@ -38,6 +38,7 @@ export function generateReviewReport(dir: string): string {
   <div class="actions">
     <button class="approve" data-id="${p}">✓ Setujui</button>
     <button class="skip" data-id="${p}">✕ Lewati</button>
+    <button class="reimage" data-id="${p}">🖼️ Ambil gambar lagi</button>
     <button class="publish" data-id="${p}">🚀 Unggah</button>
     <span class="status" data-status="${p}"></span>
   </div>
@@ -62,6 +63,9 @@ export function generateReviewReport(dir: string): string {
   #ig-status.err { color: #f87171; }
   #copy { background: #2563eb; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
   #copy:hover { background: #1d4ed8; }
+  #regen { background: #6d28d9; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
+  #regen:hover { background: #5b21b6; }
+  #regen:disabled { opacity: .5; cursor: wait; }
   #publish-all { background: #b45309; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
   #publish-all:hover { background: #92400e; }
   main { padding: 24px; max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
@@ -84,6 +88,10 @@ export function generateReviewReport(dir: string): string {
   .publish:hover { background: #9a3412; }
   .publish:disabled { opacity: .5; cursor: wait; }
   .publish.done { background: #16a34a; color: #fff; }
+  .reimage { background: #1e3a5f; color: #bfdbfe; }
+  .reimage:hover { background: #1e40af; }
+  .reimage:disabled { opacity: .5; cursor: wait; }
+  .reimage.done { background: #16a34a; color: #fff; }
   .status { font-size: 12px; color: #888; margin-left: auto; letter-spacing: 1px; }
   .post.approved .status { color: #4ade80; }
 </style>
@@ -93,6 +101,7 @@ export function generateReviewReport(dir: string): string {
   <h1>Review ${esc(dir)}</h1>
   <span id="ig-status">menghubungi server…</span>
   <span id="count"></span>
+  <button id="regen">🔄 Generate 5 post lagi</button>
   <button id="copy">Salin caption yang disetujui</button>
   <button id="publish-all">🚀 Unggah semua disetujui</button>
 </header>
@@ -179,6 +188,53 @@ ${cards}
     const btn = e.target.closest('button.publish');
     if (!btn) return;
     publish(btn.closest('.post'), btn);
+  });
+
+  document.addEventListener('click', async e => {
+    const btn = e.target.closest('button.reimage');
+    if (!btn) return;
+    const post = btn.closest('.post');
+    btn.disabled = true;
+    btn.textContent = '…';
+    const r = await api('/api/reimage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: DIR, postId: post.dataset.id }),
+    });
+    btn.disabled = false;
+    if (r.ok) {
+      btn.textContent = r.hasImage ? '✓ Foto didapat' : 'Tetap tanpa foto';
+      btn.classList.add('done');
+      const img = post.querySelector('.slides img');
+      if (img) img.src = img.src.split('?')[0] + '?t=' + Date.now();
+    } else {
+      btn.textContent = '✗ Gagal';
+      alert('Gagal ambil gambar: ' + (r.error || 'unknown'));
+    }
+  });
+
+  document.getElementById('regen').addEventListener('click', async () => {
+    const btn = document.getElementById('regen');
+    btn.disabled = true;
+    btn.textContent = '⏳ Generate… (1-2 menit)';
+    try {
+      const r = await api('/api/regenerate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: DIR, count: 5 }),
+      });
+      if (r.ok) {
+        location.reload();
+      } else {
+        btn.disabled = false;
+        btn.textContent = '🔄 Generate 5 post lagi';
+        alert('Gagal generate: ' + (r.error || 'unknown'));
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = '🔄 Generate 5 post lagi';
+      alert('Server tidak jalan? npm run serve');
+    }
   });
 
   document.getElementById('publish-all').addEventListener('click', async () => {
