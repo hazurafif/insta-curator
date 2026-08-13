@@ -8,7 +8,7 @@ berbahasa Indonesia lengkap dengan caption dan hashtag.
 
 1. **Kumpulkan** — ambil berita terbaru dari 6 RSS feed + Hacker News tiap 30 menit, dedupe dan skor otomatis, simpan ke SQLite.
 2. **Kurasi** — LLM (DeepSeek V4 via OpenCode Go) memilih 5 berita terbaik, lalu menulis hook, caption, hashtag, dan skrip reels dalam Bahasa Indonesia.
-3. **Render** — generate carousel PNG (cover foto + isi + CTA) dengan font Archivo Black, Plus Jakarta Sans, dan Space Grotesk.
+3. **Render** — generate carousel PNG (cover foto + isi) dengan font Archivo Black, Plus Jakarta Sans, dan Space Grotesk.
 4. **Review** — buka halaman review HTML: setujui atau lewati tiap post, lalu salin caption yang disetujui.
 5. **Unggah** — paste ke Instagram (untuk sekarang semi-manual; auto-post via Meta Graph API direncanakan).
 
@@ -33,17 +33,16 @@ output/YYYY-MM-DD/
 ├── review.html             # halaman review: setujui, lewati, salin caption
 └── post-01/
     ├── 01-cover.png        # cover foto artikel + hook
-    ├── 02-isi.png          # ringkasan + poin penting
-    ├── 03-cta.png          # handle + ajakan follow
+    ├── 02-isi.png          # paragraf ringkasan (auto pecah ke 03-isi.png jika panjang)
     └── caption.txt         # caption + hashtag + sumber
 ```
 
-Maksimal 4 slide per post; detail cerita ada di caption.
+Isi slide berupa paragraf murni; detail cerita ada di caption.
 
 ## Konfigurasi
 
 - `src/config.ts` — daftar feed RSS, ambang skor Hacker News, branding (handle, kategori), jumlah post per hari.
-- `.env` — kunci API LLM (lihat `.env.example`).
+- `.env` — kunci API LLM (lihat `.env.example`). DeepSeek V4 adalah reasoning model, jadi `max_tokens` (default 128000) termasuk token reasoning-nya.
 - `assets/fonts/` — font yang dipakai untuk render.
 
 ## Dokumentasi
