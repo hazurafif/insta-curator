@@ -122,13 +122,6 @@ interface Block {
   h: number;
 }
 
-/** Clean text for slides: no emoji, max 3 sentences, tight whitespace. */
-function cleanText(text: string, maxSentences = 3): string {
-  const t = stripEmoji(text).replace(/\s+/g, ' ').trim();
-  const sentences = t.split(/(?<=[.!?])\s+/);
-  return sentences.slice(0, maxSentences).join(' ');
-}
-
 /** Paragraph block, auto-fit. center=true for a lone statement slide. */
 function paraBlock(
   text: string,
@@ -161,40 +154,33 @@ function paraBlock(
   };
 }
 
-/** Split the summary sentences across slides so each slide fits (~11 baris). */
+/** Pecah summary jadi slide: prioritaskan paragraf (\n\n), satu paragraf per slide. */
 function splitSummary(curation: Curation): string[] {
-  const sentences = cleanText(curation.summary, 6)
+  const t = stripEmoji(curation.summary).trim();
+  const paras = t
+    .split(/\n\s*\n/)
+    .map((p) => p.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+
+  if (paras.length >= 2) return paras.slice(0, 2);
+
+  // Fallback (summary lama / tanpa paragraf): bagi kalimat jadi 2 bagian seimbang.
+  const sentences = t
+    .replace(/\s+/g, ' ')
     .split(/(?<=[.!?])\s+/)
     .filter(Boolean);
-  if (!sentences.length) sentences.push(cleanText(curation.summary, 3));
-
-  const slides: string[] = [];
-  let acc: string[] = [];
-  for (const s of sentences) {
-    const trial = [...acc, s].join(' ');
-    if (
-      acc.length &&
-      wrapText(trial, W - PAD * 2, 40, fontFactors.body).length > 11
-    ) {
-      slides.push(acc.join(' '));
-      acc = [s];
-    } else {
-      acc.push(s);
-    }
+  if (sentences.length >= 4) {
+    const mid = Math.ceil(sentences.length / 2);
+    return [sentences.slice(0, mid).join(' '), sentences.slice(mid).join(' ')];
   }
-  if (acc.length) slides.push(acc.join(' '));
-  if (slides.length > 3) {
-    slides[2] = [...slides.slice(2)].join(' ');
-    slides.length = 3;
-  }
-  return slides;
+  return [sentences.join(' ')];
 }
 
-/** Pure paragraph slides — cover the story, no decorations. */
+/** Pure paragraph slides — satu paragraf per slide, padding seimbang. */
 function contentParagraphs(curation: Curation, p: Palette, total: number): string[] {
   return splitSummary(curation).map((text, i) => {
     const para = paraBlock(text, p, {
-      y: START,
+      center: true, // padding atas-bawah seimbang
       startSize: 54,
       maxLines: 12,
       minSize: 36,
