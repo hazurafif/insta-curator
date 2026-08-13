@@ -13,6 +13,7 @@ BAHASA INDONESIA (untuk hook, summary, bullets):
 - Pakai partikel emotif secukupnya (1–2 per kalimat, jangan lebay): sih, dong, deh, kan, nih, tuh, lho, kok.
 - Hindari kata berita formal: "merupakan", "diluncurkan", "dengan demikian", "hal ini", "terkait". Ganti kata kerja langsung.
 - Kalimat pendek (maks 15 kata). Satu kalimat satu ide.
+- HOOK BUKAN terjemahan literal judul. Parafrase bebas dan natural. Contoh buruk: "Kepala etika OpenAI kabur." Contoh baik: "Bos etika OpenAI tiba-tiba mundur. Ada drama?" Jangan pakai kata kaku seperti "kepala etika"; cari istilah natural (bos etika, tim etika, dll).
 
 ENGLISH (untuk caption, hashtags, reelScript):
 - Professional, clear English — like a well-written news summary. NOT casual, no slang, no filler words.

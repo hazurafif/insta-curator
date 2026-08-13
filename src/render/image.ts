@@ -113,6 +113,25 @@ export async function resolveStoryImage(story: Story): Promise<string | null> {
     }
   }
 
+  if (!candidates.length) {
+    // Fallback: microlink metadata API (bisa render halaman JS).
+    try {
+      const res = await fetchWithTimeout(
+        `https://api.microlink.io?url=${encodeURIComponent(story.url)}`,
+        12000,
+      );
+      if (res.ok) {
+        const j = (await res.json()) as {
+          data?: { image?: { url?: string } };
+        };
+        const img = j?.data?.image?.url;
+        if (img) candidates.push(img);
+      }
+    } catch {
+      /* fallback gagal — tetap pakai cover tipografi */
+    }
+  }
+
   for (const url of candidates.slice(0, 6)) {
     try {
       const file = await downloadImage(url, story.id);

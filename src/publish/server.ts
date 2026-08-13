@@ -8,6 +8,7 @@ import { runIngestion } from '../ingest/run.js';
 import { curateTopStories } from '../llm/curate.js';
 import { renderCarousels, renderCover } from '../render/carousel.js';
 import { clearImageCache } from '../render/image.js';
+import { canonicalizeUrl } from '../ingest/dedupe.js';
 import type { Curation, Story } from '../types.js';
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -89,9 +90,27 @@ const server = createServer(async (req, res) => {
       }
 
       const dir = join(OUTPUT_DIR, date, postId);
-      const meta = JSON.parse(
-        readFileSync(join(dir, 'meta.json'), 'utf8'),
-      ) as { story: Story; curation: Curation };
+      let meta: { story: Story; curation: Curation };
+      try {
+        meta = JSON.parse(
+          readFileSync(join(dir, 'meta.json'), 'utf8'),
+        ) as { story: Story; curation: Curation };
+      } catch {
+        // Post lama tanpa meta.json: cari story dari "Source: ..." di caption.txt.
+        const captionText = readFileSync(join(dir, 'caption.txt'), 'utf8');
+        const m = captionText.match(/Source:\s*(\S+)/i);
+        if (!m) throw new Error('meta.json tidak ada dan Source URL tidak ditemukan');
+        const store = new Store(config.dbPath);
+        try {
+          const story = store.findByCanonicalUrl(canonicalizeUrl(m[1]));
+          if (!story) throw new Error('story tidak ditemukan di database');
+          const curation = store.getCuration(story.id);
+          if (!curation) throw new Error('curation tidak ditemukan di database');
+          meta = { story, curation };
+        } finally {
+          store.close();
+        }
+      }
 
       clearImageCache(meta.story.id);
       const hasImage = await renderCover(

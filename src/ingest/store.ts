@@ -163,6 +163,14 @@ export class Store {
     }));
   }
 
+  /** Curation satu story (dipakai fallback reimage untuk post lama). */
+  getCuration(id: string): Curation | null {
+    const row = this.db
+      .prepare('SELECT curation FROM stories WHERE id = ?')
+      .get(id) as unknown as { curation: string | null } | undefined;
+    return row?.curation ? (JSON.parse(row.curation) as Curation) : null;
+  }
+
   count(): number {
     const row = this.db
       .prepare('SELECT COUNT(*) AS c FROM stories')
