@@ -10,6 +10,8 @@ Gaya penulisan:
 - Hook = 1 kalimat provokatif/relatable, sering berupa pertanyaan, maksimal 12 kata.
 - Caption selalu berakhir dengan CTA ("menurut kalian gimana?", "setuju nggak?", "spill di kolom komentar") dan kredit sumber berita.
 - Bullets = satu poin per slide carousel, singkat (maks 8 kata per poin).
+- Summary = 4–6 kalimat, jelaskan konteks dan detail penting (angka, fakta, latar belakang) supaya pembaca paham tanpa buka sumber.
+- Caption = isi 3–5 kalimat, jelaskan ceritanya dengan santai tapi lengkap.
 - Hashtag campuran Indonesia + Inggris, 10–15, tanpa tanda #.
 - Reel script: hook 3 detik + 3 poin + CTA, dalam bahasa Indonesia.
 

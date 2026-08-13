@@ -151,7 +151,7 @@ export class Store {
   listShortlistedWithCuration(limit = 20): CurationResult[] {
     const rows = this.db
       .prepare(
-        "SELECT * FROM stories WHERE status = 'shortlisted' AND curation IS NOT NULL ORDER BY score DESC LIMIT ?",
+        "SELECT * FROM stories WHERE status = 'shortlisted' AND curation IS NOT NULL ORDER BY rowid DESC LIMIT ?",
       )
       .all(limit) as unknown as StoryRow[];
     return rows.map((r) => ({

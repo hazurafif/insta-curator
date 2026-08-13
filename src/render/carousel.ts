@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from '../config.js';
 import type { Curation, CurationResult, Story } from '../types.js';
@@ -161,54 +161,53 @@ function paraBlock(
   };
 }
 
-/** Soft rounded "cards", one per point — no numbers, just the content. */
-function contentParagraph(curation: Curation, p: Palette, total: number): string {
-  // Pure paragraph: the full summary, auto-fit to the slide.
-  let text = cleanText(curation.summary, 3);
-  if (
-    wrapText(text, W - PAD * 2, 36, fontFactors.body).length > 12
-  ) {
-    text = cleanText(curation.summary, 2); // safety: drop to 2 sentences
+/** Split the summary sentences across slides so each slide fits (~11 baris). */
+function splitSummary(curation: Curation): string[] {
+  const sentences = cleanText(curation.summary, 6)
+    .split(/(?<=[.!?])\s+/)
+    .filter(Boolean);
+  if (!sentences.length) sentences.push(cleanText(curation.summary, 3));
+
+  const slides: string[] = [];
+  let acc: string[] = [];
+  for (const s of sentences) {
+    const trial = [...acc, s].join(' ');
+    if (
+      acc.length &&
+      wrapText(trial, W - PAD * 2, 40, fontFactors.body).length > 11
+    ) {
+      slides.push(acc.join(' '));
+      acc = [s];
+    } else {
+      acc.push(s);
+    }
   }
-  const para = paraBlock(text, p, {
-    y: START,
-    startSize: 54,
-    maxLines: 12,
-    minSize: 36,
-  });
-  return doc(para.svg + progressDots(1, total, p.fg), p.bg);
+  if (acc.length) slides.push(acc.join(' '));
+  if (slides.length > 3) {
+    slides[2] = [...slides.slice(2)].join(' ');
+    slides.length = 3;
+  }
+  return slides;
 }
 
-/** Final slide — handle + follow line. No question. */
-function ctaSlide(p: Palette, active: number, total: number): string {
-  const handle = config.brand.handle;
-  const { size, lines } = fit(handle, W - PAD * 2, 2, 128, fontFactors.headline, 72);
-  const lineH = size * 1.15;
-  const blockH = lines.length * lineH;
-  const baseline = (H - blockH) / 2 + size * 0.85 - 60;
-  const tspans = lines
-    .map(
-      (ln, i) =>
-        `<tspan x="${PAD}" y="${baseline + i * lineH}">${esc(ln)}</tspan>`,
-    )
-    .join('');
-
-  return doc(
-    `
-<text x="${PAD}" y="${baseline}" font-family="${fonts.headline}" font-size="${size}" fill="${p.bg}">${tspans}</text>
-<line x1="${PAD}" y1="${baseline + lines.length * lineH - size * 0.85 + 56}" x2="${W - PAD}" y2="${baseline + lines.length * lineH - size * 0.85 + 56}" stroke="${p.bg}" stroke-width="5" stroke-opacity="0.5"/>
-<text x="${PAD}" y="${H - 200}" font-family="${fonts.body}" font-size="36" fill="${p.bg}" fill-opacity="0.9">${esc(config.brand.ctaFollow)}</text>
-${progressDots(active, total, p.bg)}
-`,
-    p.accent,
-  );
+/** Pure paragraph slides — cover the story, no decorations. */
+function contentParagraphs(curation: Curation, p: Palette, total: number): string[] {
+  return splitSummary(curation).map((text, i) => {
+    const para = paraBlock(text, p, {
+      y: START,
+      startSize: 54,
+      maxLines: 12,
+      minSize: 36,
+    });
+    return doc(para.svg + progressDots(i + 1, total, p.fg), p.bg);
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Post assembly
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Render one post: cover + content (1–2 slides) + CTA → max 4 slides. */
+/** Render one post: cover + isi (1–3 slide paragraf). */
 async function renderStory(
   result: CurationResult,
   p: Palette,
@@ -217,19 +216,19 @@ async function renderStory(
   const { story, curation } = result;
   const imageDataUri = await prepareCoverImage(story);
 
-  const total = 3; // cover + isi + CTA
+  const isi = splitSummary(curation);
+  const total = 1 + isi.length; // cover + isi
+
   const slides: { file: string; svg: string }[] = [];
   slides.push({
     file: '01-cover.png',
     svg: coverSlide(curation, story, p, imageDataUri, total),
   });
-  slides.push({
-    file: '02-isi.png',
-    svg: contentParagraph(curation, p, total),
-  });
-  slides.push({
-    file: '03-cta.png',
-    svg: ctaSlide(p, 2, total),
+  contentParagraphs(curation, p, total).forEach((svg, i) => {
+    slides.push({
+      file: `${String(i + 2).padStart(2, '0')}-isi.png`,
+      svg,
+    });
   });
 
   for (const s of slides) svgToPng(s.svg, join(dir, s.file));
@@ -255,6 +254,7 @@ export async function renderCarousels(
   const dir = outDir ?? join('output', new Date().toISOString().slice(0, 10));
   for (let i = 0; i < results.length; i++) {
     const postDir = join(dir, `post-${String(i + 1).padStart(2, '0')}`);
+    rmSync(postDir, { recursive: true, force: true }); // drop stale slides from earlier design versions
     mkdirSync(postDir, { recursive: true });
     try {
       await renderStory(results[i], paletteFor(i), postDir);

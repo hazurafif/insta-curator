@@ -46,7 +46,7 @@ export const config = {
     model: process.env.OPENCODE_GO_MODEL ?? 'deepseek-v4-flash',
     apiKey: process.env.OPENCODE_GO_API_KEY ?? '',
     temperature: 0.8,
-    maxTokens: 16000,
+    maxTokens: Number(process.env.OPENCODE_GO_MAX_TOKENS ?? 128000),
   },
 
   /** How many stories to curate per run (= daily posts). */
