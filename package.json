@@ -1,0 +1,28 @@
+{
+  "name": "ig-reels",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tech news curator → Instagram pipeline",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "curate": "tsx src/index.ts --curate",
+    "render": "tsx src/index.ts --render",
+    "render:stored": "tsx src/index.ts --render-stored",
+    "watch": "tsx src/index.ts --watch",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
