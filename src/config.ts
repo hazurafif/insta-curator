@@ -22,10 +22,7 @@ export const config = {
     { name: 'arstechnica', url: 'https://arstechnica.com/feed/' },
     { name: 'wired', url: 'https://www.wired.com/feed/rss' },
     { name: 'engadget', url: 'https://www.engadget.com/rss.xml' },
-    // Sumber Indonesia (prioritas lebih tinggi di scoring).
-    { name: 'cnn-tekno', url: 'https://www.cnnindonesia.com/teknologi/rss' },
-    { name: 'cnbc-tech', url: 'https://www.cnbcindonesia.com/tech/rss' },
-    { name: 'antara-tekno', url: 'https://www.antaranews.com/rss/tekno' },
+    { name: 'cnbc-tech', url: 'https://www.cnbc.com/id/19854910/device/rss/rss.html' },
   ],
 
   hn: {
@@ -34,8 +31,9 @@ export const config = {
     minPoints: 100, // filter noise dari blog/personal project kecil
   },
 
-  /** Domain reputation: bonus poin untuk media arus utama & Indonesia. */
+  /** Domain reputation: bonus poin untuk media arus utama. */
   domainTiers: {
+    // 0 = tidak diprioritaskan (sumber Indonesia netral, tidak dipaksa).
     indonesia: [
       'kompas.com',
       'detik.com',
@@ -73,7 +71,7 @@ export const config = {
   },
 
   score: {
-    indonesiaBonus: 20, // prioritas sumber Indonesia
+    indonesiaBonus: 0, // tidak dipaksa (user nggak suka dominasi CNBC Indonesia)
     mainstreamBonus: 15,
     unknownPenalty: -8, // blog/personal site dari HN dapat penalti
   },
