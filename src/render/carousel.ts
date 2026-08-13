@@ -114,88 +114,13 @@ ${progressDots(0, total, p.fg)}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Content slides — no labels, no numbers. Summary paragraph + soft point cards.
-// ─────────────────────────────────────────────────────────────────────────────
 
-interface Block {
-  svg: string;
-  h: number;
-}
-
-/** Paragraph block, auto-fit. center=true for a lone statement slide. */
-function paraBlock(
-  text: string,
-  p: Palette,
-  opts: {
-    y?: number;
-    center?: boolean;
-    startSize?: number;
-    maxLines?: number;
-    minSize?: number;
-  } = {},
-): Block {
-  const startSize = opts.startSize ?? 46;
-  const maxLines = opts.maxLines ?? 10;
-  const minSize = opts.minSize ?? 36;
-  // Teks dikasih margin kanan ekstra supaya padding kanan nggak mepet.
-  const textW = W - PAD * 2 - 28;
-  const { size, lines } = fit(text, textW, maxLines, startSize, fontFactors.body, minSize);
-  const lineH = size * 1.5;
-  const baseline = opts.center
-    ? (H - lines.length * lineH) / 2 + size * 0.8
-    : (opts.y ?? START);
-  const tspans = lines
-    .map(
-      (ln, i) =>
-        `<tspan x="${PAD}" y="${baseline + i * lineH}">${esc(ln)}</tspan>`,
-    )
-    .join('');
-  return {
-    svg: `<text font-family="${fonts.body}" font-size="${size}" fill="${p.fg}">${tspans}</text>`,
-    h: lines.length * lineH,
-  };
-}
-
-/** Pecah summary jadi slide: prioritaskan paragraf (\n\n), satu paragraf per slide. */
-function splitSummary(curation: Curation): string[] {
-  const t = stripEmoji(curation.summary).trim();
-  const paras = t
-    .split(/\n\s*\n/)
-    .map((p) => p.replace(/\s+/g, ' ').trim())
-    .filter(Boolean);
-
-  if (paras.length >= 2) return paras.slice(0, 2);
-
-  // Fallback (summary lama / tanpa paragraf): bagi kalimat jadi 2 bagian seimbang.
-  const sentences = t
-    .replace(/\s+/g, ' ')
-    .split(/(?<=[.!?])\s+/)
-    .filter(Boolean);
-  if (sentences.length >= 4) {
-    const mid = Math.ceil(sentences.length / 2);
-    return [sentences.slice(0, mid).join(' '), sentences.slice(mid).join(' ')];
-  }
-  return [sentences.join(' ')];
-}
-
-/** Pure paragraph slides — satu paragraf per slide, padding seimbang. */
-function contentParagraphs(curation: Curation, p: Palette, total: number): string[] {
-  return splitSummary(curation).map((text, i) => {
-    const para = paraBlock(text, p, {
-      center: true, // padding atas-bawah seimbang
-      startSize: 54,
-      maxLines: 12,
-      minSize: 36,
-    });
-    return doc(para.svg + progressDots(i + 1, total, p.fg), p.bg);
-  });
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Post assembly
+// Post assembly — satu post = satu slide cover + caption
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Render one post: cover + isi (1–3 slide paragraf). */
+/** Render one post: cover saja (caption-nya di caption.txt). */
 async function renderStory(
   result: CurationResult,
   p: Palette,
@@ -204,33 +129,19 @@ async function renderStory(
   const { story, curation } = result;
   const imageDataUri = await prepareCoverImage(story);
 
-  const isi = splitSummary(curation);
-  const total = 1 + isi.length; // cover + isi
+  svgToPng(coverSlide(curation, story, p, imageDataUri, 1), join(dir, 'cover.png'));
 
-  const slides: { file: string; svg: string }[] = [];
-  slides.push({
-    file: '01-cover.png',
-    svg: coverSlide(curation, story, p, imageDataUri, total),
-  });
-  contentParagraphs(curation, p, total).forEach((svg, i) => {
-    slides.push({
-      file: `${String(i + 2).padStart(2, '0')}-isi.png`,
-      svg,
-    });
-  });
-
-  for (const s of slides) svgToPng(s.svg, join(dir, s.file));
-
-  // Strip any "Sumber: ..." line the LLM wrote, so we only append our canonical one.
+  // Strip any "Source/Sumber: ..." line the LLM wrote, then append the canonical URL.
   const lines = curation.caption.split('\n');
-  const srcIdx = lines.findIndex((l) => /^sumber\s*:/i.test(l.trim()));
+  const srcIdx = lines.findIndex((l) => /^s(umber|ource)\s*:/i.test(l.trim()));
   const cleanCaption = (srcIdx === -1 ? lines : lines.slice(0, srcIdx))
     .join('\n')
     .trim();
 
+  // Caption dalam Bahasa Inggris, tanpa hashtag.
   writeFileSync(
     join(dir, 'caption.txt'),
-    `${cleanCaption}\n\n${curation.hashtags.map((h) => '#' + h).join(' ')}\n\nSumber: ${story.url}\n`,
+    `${cleanCaption}\n\nSource: ${story.url}\n`,
   );
 }
 

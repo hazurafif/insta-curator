@@ -32,12 +32,11 @@ Data tersimpan di `data/stories.db` (SQLite bawaan Node).
 output/YYYY-MM-DD/
 ├── review.html             # halaman review: setujui, lewati, salin caption
 └── post-01/
-    ├── 01-cover.png        # cover foto artikel + hook
-    ├── 02-isi.png          # paragraf ringkasan (auto pecah ke 03-isi.png jika panjang)
-    └── caption.txt         # caption + hashtag + sumber
+    ├── cover.png           # cover foto artikel + hook (satu-satunya slide)
+    └── caption.txt         # caption bahasa Inggris + source link
 ```
 
-Isi slide berupa paragraf murni; detail cerita ada di caption.
+Satu post = satu slide cover; cerita lengkapnya ada di caption (English, tanpa hashtag).
 
 ## Konfigurasi
 
