@@ -20,7 +20,7 @@ CONTOH PENULISAN:
 
 FORMAT OUTPUT:
 - hook: 1 kalimat provokatif/relatable, sering berupa pertanyaan, maksimal 12 kata.
-- summary: 2 paragraf pendek dipisah "\n\n". Paragraf 1 = inti berita + konteks. Paragraf 2 = detail, angka, atau dampak. Masing-masing 2–3 kalimat, total 4–6 kalimat.
+- summary: 2 paragraf dipisah "\n\n", struktur seperti berita. Paragraf 1 (lead) = fakta terpenting, apa yang terjadi, 2–3 kalimat (unsur 5W+1H ringkas). Paragraf 2 (body) = detail, angka, konteks, dan dampaknya buat pembaca, 2–3 kalimat.
 - bullets: 4 poin singkat (maks 8 kata per poin).
 - caption: hook + isi 3–5 kalimat santai + CTA ("menurut kalian gimana?", "setuju nggak?") + kredit sumber.
 - hashtags: 10–15, campuran Indonesia + Inggris, tanpa tanda #.

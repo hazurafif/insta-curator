@@ -141,13 +141,43 @@ Observational design genre:
 
 ---
 
-## 5. What this means for our pipeline (M3 templates)
+## 6. Riset lanjutan: struktur berita & tipografi
 
-1. **One post structure** (max 5 slides):
-   - `01-cover` — article image full-bleed + gradient + sticker badge + hook (uppercase if short).
-   - `02..04-point` — up to 3 key points, one per slide (Jakarta Keras typographic contrast).
-   - `0X-cta` — question + handle + follow CTA.
-   - Everything else goes in the caption (`caption.txt`).
+### Struktur paragraf (dari pedoman jurnalistik)
+
+Berita klasik Indonesia (PWI, Kompas, materi jurnalistik dasar) pakai struktur:
+- **Teras berita (lead)**: paragraf pertama, fakta terpenting, 2–3 kalimat,
+  menganut 5W+1H — menarik perhatian pembaca.
+- **Tubuh berita (body)**: menguraikan lead dengan detail, angka, konteks.
+- **Ekor**: konteks tambahan.
+
+Diterapkan ke slide isi kita:
+- Slide 1 (paragraf lead) = apa yang terjadi, fakta terpenting.
+- Slide 2 (paragraf body) = detail, angka, dampak buat pembaca.
+
+### Tipografi
+
+- **Plus Jakarta Sans** terbukti relevan: studi tipografi city branding Jakarta
+  menjadikannya studi kasus utama (Jurnal Riset Multidisiplin Edukasi).
+- Tren tipografi 2025: "sky-high sans serifs" (display sans besar-besar) —
+  konsisten dengan pilihan Archivo Black untuk hook/cover.
+- Pedoman dasar Instagram typography: 2–3 typeface maksimal, hierarki jelas,
+  phone-first readability (font besar, kontras tinggi).
+
+### Bahasa (update)
+
+- Partikel emotif (kan, nih, tuh, lho, kok, deh, sih, dong) adalah penanda
+  utama bahasa gaul Jakarta yang natural (Bahasakita, kajian UNAIR/Badan Bahasa).
+- Slang + code-switching Inggris (Jaksel) umum dipakai akun media Gen Z;
+  orthographic play (nggak/gak, udah, bikin) adalah norma.
+
+---
+
+## 7. What this means for our pipeline (M3 templates)
+
+1. **Struktur slide**: `01-cover` (foto + hook), lalu paragraf lead dan paragraf body
+   masing-masing satu slide — maksimal 2 slide isi, teks di-center vertikal
+   dengan padding kiri-kanan-atas-bawah seimbang.
 2. **One reel template** (M7): hook overlay (first 3s) + 3 beats + CTA, Plus Jakarta Sans.
 3. **Caption generator** must output the structure in §2 (hook, isi, CTA, sumber, hashtags) in Bahasa Indonesia, colloquial tone.
 4. **Design system config** (fonts, colors, sizes) lives in `src/render/theme.ts` so templates are swappable.

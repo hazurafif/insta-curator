@@ -137,7 +137,9 @@ function paraBlock(
   const startSize = opts.startSize ?? 46;
   const maxLines = opts.maxLines ?? 10;
   const minSize = opts.minSize ?? 36;
-  const { size, lines } = fit(text, W - PAD * 2, maxLines, startSize, fontFactors.body, minSize);
+  // Teks dikasih margin kanan ekstra supaya padding kanan nggak mepet.
+  const textW = W - PAD * 2 - 28;
+  const { size, lines } = fit(text, textW, maxLines, startSize, fontFactors.body, minSize);
   const lineH = size * 1.5;
   const baseline = opts.center
     ? (H - lines.length * lineH) / 2 + size * 0.8

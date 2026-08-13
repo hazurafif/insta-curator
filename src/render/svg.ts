@@ -35,10 +35,10 @@ export function stripEmoji(s: string): string {
 export function measure(text: string, fontSize: number, factor: number): number {
   let w = 0;
   for (const ch of text) {
-    if (ch === ' ') w += fontSize * 0.3;
-    else if ('ilIjtfr!.,:;\'"'.includes(ch)) w += fontSize * 0.34;
+    if (ch === ' ') w += fontSize * 0.32;
+    else if ('ilIjtfr!.,:;\'"'.includes(ch)) w += fontSize * 0.38;
     else if (/[A-Z0-9@#%&]/.test(ch)) w += fontSize * factor;
-    else w += fontSize * factor * 0.9;
+    else w += fontSize * factor * 0.92;
   }
   return w;
 }
