@@ -257,7 +257,8 @@ export async function renderCarousels(
     rmSync(postDir, { recursive: true, force: true }); // drop stale slides from earlier design versions
     mkdirSync(postDir, { recursive: true });
     try {
-      await renderStory(results[i], paletteFor(i), postDir);
+      // Semua post pakai gaya yang sama (palette post-01).
+      await renderStory(results[i], paletteFor(0), postDir);
       console.log(
         `✓ post-${String(i + 1).padStart(2, '0')} — ${results[i].story.title.slice(0, 60)}`,
       );
