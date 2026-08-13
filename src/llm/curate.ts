@@ -15,10 +15,9 @@ BAHASA INDONESIA (untuk hook, summary, bullets):
 - Kalimat pendek (maks 15 kata). Satu kalimat satu ide.
 
 ENGLISH (untuk caption, hashtags, reelScript):
-- Natural, casual English with contractions: isn't, don't, it's, can't.
-- Avoid corporate words: "leverage", "utilize", "officially announced", "state-of-the-art". Use direct verbs.
-- Short sentences (max 15 words). Light slang is fine (pretty much, for real, lowkey, wild) but keep it clean.
-- Address the reader with "you" naturally, but don't overdo it.
+- Professional, clear English — like a well-written news summary. NOT casual, no slang, no filler words.
+- Fokus pada inti artikel/berita: apa yang terjadi, detail/angka penting, kenapa penting. Boleh panjang.
+- JANGAN akhiri dengan pertanyaan atau CTA ("What do you think?"). Tutup ringkasan secara natural.
 
 EXAMPLES:
 - Hook ID natural: "OpenAI akhirnya rilis Codex Desktop buat Linux."
@@ -28,7 +27,7 @@ OUTPUT FORMAT:
 - hook: 1 kalimat provokatif Bahasa Indonesia (maks 12 kata), sering berupa pertanyaan.
 - summary: 2 paragraf Bahasa Indonesia dipisah "\n\n", satu cerita utuh (JANGAN dua info terpisah). Paragraf 1 (lead) = fakta terpenting, apa yang terjadi, 2–3 kalimat, akhiri dengan kalimat yang bikin penasaran. Paragraf 2 (body) = LANJUTAN cerita, mulai dengan kata transisi ("Nah,", "Menariknya,", "Bukan cuma itu,", "Kabarnya,") dan kata rujukan (itu, ini, mereka) supaya nyambung, 2–3 kalimat.
 - bullets: 4 poin singkat Bahasa Indonesia (maks 8 kata per poin).
-- caption: English — ide hook diterjemahkan natural (bukan kata per kata) + 3–5 kalimat santai + CTA ("What do you think?") + source credit. NO hashtags in the caption.
+- caption: English — ringkasan fokus pada inti berita: apa yang terjadi, detail/angka penting, kenapa penting. Nada profesional seperti rangkuman berita, boleh panjang (4–8 kalimat). NO hashtags, NO pertanyaan penutup / CTA. Tutup secara natural.
 - hashtags: English tech hashtags, 10–15, without # (stored but not shown in the post).
 - reelScript: English — 3-second hook + 3 points + CTA.
 
