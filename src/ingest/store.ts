@@ -79,6 +79,7 @@ export class Store {
     );
     // Migration for pre-existing DBs created before the curation column existed.
     this.ensureColumn('curation', 'TEXT');
+    this.ensureColumn('curated_at', 'TEXT');
   }
 
   private ensureColumn(name: string, ddl: string): void {
@@ -93,8 +94,10 @@ export class Store {
   /** Save curation output and mark the story as shortlisted. */
   setCuration(id: string, curationJson: string): void {
     this.db
-      .prepare("UPDATE stories SET curation = ?, status = 'shortlisted' WHERE id = ?")
-      .run(curationJson, id);
+      .prepare(
+        "UPDATE stories SET curation = ?, curated_at = ?, status = 'shortlisted' WHERE id = ?",
+      )
+      .run(curationJson, new Date().toISOString(), id);
   }
 
   findByCanonicalUrl(canonicalUrl: string): Story | null {
@@ -151,7 +154,7 @@ export class Store {
   listShortlistedWithCuration(limit = 20): CurationResult[] {
     const rows = this.db
       .prepare(
-        "SELECT * FROM stories WHERE status = 'shortlisted' AND curation IS NOT NULL ORDER BY rowid DESC LIMIT ?",
+        "SELECT * FROM stories WHERE status = 'shortlisted' AND curation IS NOT NULL ORDER BY curated_at DESC, rowid DESC LIMIT ?",
       )
       .all(limit) as unknown as StoryRow[];
     return rows.map((r) => ({
