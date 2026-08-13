@@ -162,78 +162,21 @@ function paraBlock(
 }
 
 /** Soft rounded "cards", one per point — no numbers, just the content. */
-function pointCards(points: string[], y: number, p: Palette): Block {
-  const cardW = W - PAD * 2;
-  const inset = 44;
-  const textW = cardW - inset * 2;
-  const size = 40;
-  const lineH = size * 1.45;
-  const padY = 40;
-
-  let svg = '';
-  let cursor = y;
-  for (const pt of points) {
-    const lines = wrapText(pt, textW, size, fontFactors.body);
-    const cardH = lines.length * lineH + padY * 2;
-    const tspans = lines
-      .map(
-        (ln, i) =>
-          `<tspan x="${PAD + inset}" y="${cursor + padY + size * 0.8 + i * lineH}">${esc(ln)}</tspan>`,
-      )
-      .join('');
-    svg += `<rect x="${PAD}" y="${cursor}" width="${cardW}" height="${cardH}" rx="22" fill="${p.fg}" fill-opacity="0.07"/>
-<text font-family="${fonts.body}" font-weight="${weights.bodyBold}" font-size="${size}" fill="${p.fg}">${tspans}</text>`;
-    cursor += cardH + 20;
+function contentParagraph(curation: Curation, p: Palette, total: number): string {
+  // Pure paragraph: the full summary, auto-fit to the slide.
+  let text = cleanText(curation.summary, 3);
+  if (
+    wrapText(text, W - PAD * 2, 36, fontFactors.body).length > 12
+  ) {
+    text = cleanText(curation.summary, 2); // safety: drop to 2 sentences
   }
-  return { svg, h: cursor - y - 20 };
-}
-
-function cardHeight(points: string[]): number {
-  const textW = W - PAD * 2 - 88;
-  return points.reduce(
-    (h, pt) =>
-      h +
-      wrapText(pt, textW, 40, fontFactors.body).length * 40 * 1.45 +
-      40 * 2 +
-      20,
-    0,
-  ) - 20;
-}
-
-function fitsOneSlide(curation: Curation): boolean {
-  const lead = cleanText(curation.summary, 2);
-  const points = curation.bullets
-    .slice(0, config.maxBullets)
-    .map(stripEmoji)
-    .filter(Boolean);
-  const leadH = wrapText(lead, W - PAD * 2, 42, fontFactors.body).length * 42 * 1.5;
-  const cardsH = cardHeight(points);
-  return leadH + 32 + cardsH <= BOTTOM - START;
-}
-
-function contentSlides(curation: Curation, p: Palette, total: number): string[] {
-  const lead = cleanText(curation.summary, 2);
-  const points = curation.bullets
-    .slice(0, config.maxBullets)
-    .map(stripEmoji)
-    .filter(Boolean);
-
-  if (fitsOneSlide(curation)) {
-    // One content slide: lead sentence(s) + point cards.
-    let y = START;
-    const leadBlock = paraBlock(lead, p, { y, startSize: 42, maxLines: 3 });
-    y += leadBlock.h + 32;
-    const cards = pointCards(points, y, p);
-    return [doc(leadBlock.svg + cards.svg + progressDots(1, total, p.fg), p.bg)];
-  }
-
-  // Two slides: full summary as a centered statement, then the cards.
-  const sum = paraBlock(cleanText(curation.summary), p, { center: true });
-  const cards = pointCards(points, START, p);
-  return [
-    doc(sum.svg + progressDots(1, total, p.fg), p.bg),
-    doc(cards.svg + progressDots(2, total, p.fg), p.bg),
-  ];
+  const para = paraBlock(text, p, {
+    y: START,
+    startSize: 54,
+    maxLines: 12,
+    minSize: 36,
+  });
+  return doc(para.svg + progressDots(1, total, p.fg), p.bg);
 }
 
 /** Final slide — handle + follow line. No question. */
@@ -274,30 +217,33 @@ async function renderStory(
   const { story, curation } = result;
   const imageDataUri = await prepareCoverImage(story);
 
-  const total = 2 + (fitsOneSlide(curation) ? 1 : 2); // cover + content + CTA
-  const content = contentSlides(curation, p, total);
-
+  const total = 3; // cover + isi + CTA
   const slides: { file: string; svg: string }[] = [];
   slides.push({
     file: '01-cover.png',
     svg: coverSlide(curation, story, p, imageDataUri, total),
   });
-  content.forEach((svg, i) => {
-    slides.push({
-      file: `${String(i + 2).padStart(2, '0')}-isi.png`,
-      svg,
-    });
+  slides.push({
+    file: '02-isi.png',
+    svg: contentParagraph(curation, p, total),
   });
   slides.push({
-    file: `${String(content.length + 2).padStart(2, '0')}-cta.png`,
-    svg: ctaSlide(p, content.length, total),
+    file: '03-cta.png',
+    svg: ctaSlide(p, 2, total),
   });
 
   for (const s of slides) svgToPng(s.svg, join(dir, s.file));
 
+  // Strip any "Sumber: ..." line the LLM wrote, so we only append our canonical one.
+  const lines = curation.caption.split('\n');
+  const srcIdx = lines.findIndex((l) => /^sumber\s*:/i.test(l.trim()));
+  const cleanCaption = (srcIdx === -1 ? lines : lines.slice(0, srcIdx))
+    .join('\n')
+    .trim();
+
   writeFileSync(
     join(dir, 'caption.txt'),
-    `${curation.caption}\n\n${curation.hashtags.map((h) => '#' + h).join(' ')}\n\nSumber: ${story.url}\n`,
+    `${cleanCaption}\n\n${curation.hashtags.map((h) => '#' + h).join(' ')}\n\nSumber: ${story.url}\n`,
   );
 }
 
