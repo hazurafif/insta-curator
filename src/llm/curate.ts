@@ -1,8 +1,6 @@
 import type { Curation, CurationResult, Story } from '../types.js';
 import { chatCompletion } from './client.js';
 import { Store } from '../ingest/store.js';
-import { hostOf } from '../ingest/score.js';
-import { config } from '../config.js';
 
 const SYSTEM_PROMPT = `You are a content curator for an Instagram tech news account targeting a global Gen Z audience (style similar to Creativox, Folkative, USS Feed, Jakarta Keras).
 
@@ -96,41 +94,19 @@ export async function curateStory(story: Story): Promise<Curation> {
   return normalizeCuration(parseJson<unknown>(raw));
 }
 
-/** Apakah berita ini fokus AI (Claude, DeepSeek, OpenAI, Grok, dll)? */
-export function isAiStory(s: Story): boolean {
-  const host = hostOf(s.url);
-  if (host && config.aiSlot.domains.some((d) => host === d || host.endsWith('.' + d))) {
-    return true;
-  }
-  const t = s.title.toLowerCase();
-  return config.aiSlot.keywords.some((k) => t.includes(k));
-}
-
-/** Curate the top-N stories: 1 slot khusus AI + sisanya berita umum. */
+/** Curate the top-N stories by score. */
 export async function curateTopStories(
   store: Store,
   count: number,
 ): Promise<CurationResult[]> {
-  const pool = store.listNew(count * 6); // pool lebih besar supaya slot AI selalu terisi
-
-  const aiStories = pool.filter(isAiStory);
-  const generalStories = pool.filter((s) => !isAiStory(s));
-
-  const picked: Story[] = [];
-  picked.push(...aiStories.slice(0, config.aiSlot.count));
-  picked.push(...generalStories.slice(0, count - picked.length));
-  picked.sort((a, b) => b.score - a.score);
-
+  const top = store.listNew(count);
   const results: CurationResult[] = [];
 
-  for (const story of picked) {
+  for (const story of top) {
     try {
       const curation = await curateStory(story);
       store.setCuration(story.id, JSON.stringify(curation));
       results.push({ story, curation });
-      console.log(
-        `✓ kurasi [${isAiStory(story) ? 'AI' : 'UMUM'}] ${story.title.slice(0, 60)}`,
-      );
     } catch (e) {
       console.warn(`[warn] kurasi "${story.title.slice(0, 50)}":`, (e as Error).message);
     }
