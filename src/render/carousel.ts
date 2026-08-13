@@ -62,7 +62,8 @@ function coverSlide(
   const text = upper ? rawText.toUpperCase() : rawText;
 
   if (imageDataUri) {
-    const { size, lines } = fit(text, W - PAD * 2, 3, upper ? 104 : 88, fontFactors.headline, 54);
+    // Margin kanan ekstra supaya teks hook nggak mepet ke tepi.
+    const { size, lines } = fit(text, W - PAD * 2 - 32, 3, upper ? 104 : 88, fontFactors.headline, 54);
     const lineH = size * 1.22;
     const startY = H - 560;
     const tspans = lines
@@ -93,7 +94,7 @@ ${progressDots(0, total, '#FFFFFF')}
   }
 
   // No image — typographic fallback cover (same lock).
-  const { size, lines } = fit(text, W - PAD * 2, 4, upper ? 100 : 88, fontFactors.headline, 52);
+  const { size, lines } = fit(text, W - PAD * 2 - 32, 4, upper ? 100 : 88, fontFactors.headline, 52);
   const lineH = size * 1.28;
   const blockH = lines.length * lineH;
   const startY = (H - blockH) / 2 + size * 0.85;

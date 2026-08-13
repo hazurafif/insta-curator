@@ -22,7 +22,7 @@ export const weights = {
 
 /** Approx. average glyph width as a fraction of font-size (for manual wrapping). */
 export const fontFactors = {
-  headline: 0.65, // Archivo Black is wide
+  headline: 0.73, // Archivo Black uppercase memang lebar
   body: 0.6,
   mono: 0.62,
 };
