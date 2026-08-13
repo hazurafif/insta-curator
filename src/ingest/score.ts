@@ -3,7 +3,7 @@ import { config } from '../config.js';
 
 const HOUR = 3_600_000;
 
-function hostOf(url: string): string {
+export function hostOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch {

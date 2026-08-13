@@ -76,6 +76,44 @@ export const config = {
     unknownPenalty: -8, // blog/personal site dari HN dapat penalti
   },
 
+  /** 1 slot khusus berita AI (Claude, DeepSeek, OpenAI, Grok, dll). */
+  aiSlot: {
+    count: 1,
+    domains: [
+      'openai.com',
+      'anthropic.com',
+      'claude.ai',
+      'deepseek.com',
+      'x.ai',
+      'grok.com',
+      'deepmind.google',
+      'gemini.google',
+      'mistral.ai',
+      'huggingface.co',
+      'stability.ai',
+      'perplexity.ai',
+      'meta.ai',
+      'cohere.com',
+      'replicate.com',
+    ],
+    keywords: [
+      'openai',
+      'gpt',
+      'claude',
+      'anthropic',
+      'deepseek',
+      'grok',
+      'gemini',
+      'llm',
+      'llama',
+      'mistral',
+      'chatgpt',
+      'copilot',
+      'ai model',
+      'artificial intelligence',
+    ],
+  },
+
   /** Relative weight per source when scoring relevance. */
   sourceWeights: {
     rss: 1.0,
