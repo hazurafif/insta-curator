@@ -184,6 +184,26 @@ Diterapkan ke slide isi kita:
 
 ---
 
+## 8. Tren tipografi 2026
+
+Riset tren terkini (PRINT Type Report, Creative Bloq, Fontfabric, Canva Design
+Trends Report 2026):
+
+- **"Imperfect by Design"** (Canva 2026): pergeseran dari desain sempurna ke
+  visual yang manusiawi, personal, autentik.
+- **Ekspresif kembali**: setelah era neo-grotesk bersih (Inter/Geist), pendulum
+  balik ke ekspresi — serif lantang, display weight ekstrem.
+- **Prediksi Indonesia**: warna neon, palet earth-tone hangat, tipografi besar,
+  bentuk geometrik eksperimental.
+- **Mixing**: display ekspresif + body sans tenang adalah pairing yang aman.
+
+Implikasi untuk desain kita (sudah/akan diterapkan):
+- Palet cream earth-tone hangat ✅ (sudah on-trend).
+- Archivo Black sebagai display besar ✅ (sesuai "tipografi besar").
+- Opsi ke depan: aksen serif untuk kalimat pembuka, atau drop-cap di slide lead.
+
+---
+
 ## Sources
 - The Conversation — "Tak hanya akurat tapi harus menghibur: Preferensi informasi ala Gen Z" (2025)
 - *Argo Puro* — "Analyzing the Language Styles on Folkative Social Media" (2025)
