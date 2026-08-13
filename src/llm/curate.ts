@@ -18,9 +18,13 @@ CONTOH PENULISAN:
 - Formal: "Fitur ini memungkinkan pengembang untuk berkolaborasi secara real-time."
   Natural: "Intinya, lo bisa coding bareng tim real-time tanpa jeda. Gila sih."
 
+CONTOH STRUKTUR SUMMARY (P1 dan P2 harus satu cerita utuh yang nyambung):
+P1: "Google resmi perkenalkan Pixel Watch 5, gengs. Smartwatch terbaru mereka ini bawa desain lebih premium dan fitur kesehatan yang makin lengkap."
+P2: "Bukan cuma itu, layarnya juga lebih terang dan baterainya katanya tahan 2 hari. Buat lo yang tiap hari olahraga, integrasi Fitbit-nya makin dalam. Siap-siap aja harganya bikin dompet nangis."
+
 FORMAT OUTPUT:
 - hook: 1 kalimat provokatif/relatable, sering berupa pertanyaan, maksimal 12 kata.
-- summary: 2 paragraf dipisah "\n\n", struktur seperti berita. Paragraf 1 (lead) = fakta terpenting, apa yang terjadi, 2–3 kalimat (unsur 5W+1H ringkas). Paragraf 2 (body) = detail, angka, konteks, dan dampaknya buat pembaca, 2–3 kalimat.
+- summary: 2 paragraf dipisah "\n\n", satu cerita utuh yang dibagi dua (JANGAN dua info terpisah yang nggak nyambung). Paragraf 1 (lead) = fakta terpenting, apa yang terjadi, 2–3 kalimat, akhiri dengan kalimat yang bikin penasaran soal detailnya. Paragraf 2 (body) = LANJUTAN cerita, mulai dengan kata transisi ("Nah,", "Menariknya,", "Bukan cuma itu,", "Kabarnya,", "Tapi tunggu dulu,", "Soalnya,") dan pakai kata rujukan (itu, ini, dia, mereka) supaya nyambung ke paragraf 1. Berisi detail, angka, konteks, dan dampak buat pembaca, 2–3 kalimat.
 - bullets: 4 poin singkat (maks 8 kata per poin).
 - caption: hook + isi 3–5 kalimat santai + CTA ("menurut kalian gimana?", "setuju nggak?") + kredit sumber.
 - hashtags: 10–15, campuran Indonesia + Inggris, tanpa tanda #.
