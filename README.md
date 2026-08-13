@@ -44,6 +44,29 @@ Satu post = satu slide cover; cerita lengkapnya ada di caption (English, tanpa h
 - `.env` — kunci API LLM (lihat `.env.example`). DeepSeek V4 adalah reasoning model, jadi `max_tokens` (default 128000) termasuk token reasoning-nya.
 - `assets/fonts/` — font yang dipakai untuk render.
 
+## Auto-upload ke Instagram (M8)
+
+Syarat akun: Instagram **Business/Creator** yang terhubung ke Facebook Page, dan Meta app dengan izin `instagram_content_publish`. Isi `.env`:
+
+```
+IG_USER_ID=            # numeric id akun IG (Graph API explorer → GET /me?fields=id)
+IG_ACCESS_TOKEN=       # long-lived token halaman FB dengan izin publish
+IG_GRAPH_VERSION=v25.0
+IMAGE_HOST=catbox      # atau imgbb (isi IMGBB_API_KEY)
+PUBLISH_DRY_RUN=1      # 1 = simulasi dulu; 0 = posting beneran
+```
+
+Alur:
+
+```bash
+npm run render             # generate post + review.html
+npm run serve              # server lokal di http://127.0.0.1:8787
+# buka http://127.0.0.1:8787/<tanggal>/review.html
+# setujui → klik 🚀 Unggah (atau Unggah semua disetujui)
+```
+
+Cover di-upload ke host publik (catbox/imgbb) karena Graph API butuh `image_url` publik. Coba dry-run dulu (`PUBLISH_DRY_RUN=1`), lalu ganti ke `0` kalau sudah yakin.
+
 ## Dokumentasi
 
 - [`.docs/PLAN.md`](.docs/PLAN.md) — arsitektur dan roadmap lengkap.

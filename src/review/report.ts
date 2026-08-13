@@ -11,13 +11,15 @@ function esc(s: string): string {
 
 /**
  * Generate an interactive review page (review.html) inside the output folder.
- * Approve / skip state is stored in localStorage; approved captions can be
- * copied to the clipboard in one click.
+ * Approve/skip state in localStorage; approved posts bisa diunggah langsung
+ * ke Instagram lewat server publish lokal (npm run serve).
  */
 export function generateReviewReport(dir: string): string {
   const posts = readdirSync(dir)
     .filter((d) => d.startsWith('post-') && statSync(join(dir, d)).isDirectory())
     .sort();
+
+  const dirName = dir.split('/').pop() ?? dir;
 
   const cards = posts
     .map((p) => {
@@ -36,6 +38,7 @@ export function generateReviewReport(dir: string): string {
   <div class="actions">
     <button class="approve" data-id="${p}">✓ Setujui</button>
     <button class="skip" data-id="${p}">✕ Lewati</button>
+    <button class="publish" data-id="${p}">🚀 Unggah</button>
     <span class="status" data-status="${p}"></span>
   </div>
 </article>`;
@@ -51,11 +54,16 @@ export function generateReviewReport(dir: string): string {
 <style>
   * { box-sizing: border-box; }
   body { background: #141414; color: #eee; font-family: system-ui, sans-serif; margin: 0; }
-  header { position: sticky; top: 0; background: #1c1c1c; border-bottom: 1px solid #333; padding: 14px 24px; display: flex; gap: 16px; align-items: center; z-index: 10; }
+  header { position: sticky; top: 0; background: #1c1c1c; border-bottom: 1px solid #333; padding: 14px 24px; display: flex; gap: 16px; align-items: center; z-index: 10; flex-wrap: wrap; }
   header h1 { font-size: 16px; margin: 0; flex: 1; }
   #count { font-size: 14px; color: #9cf; }
+  #ig-status { font-size: 12px; color: #888; }
+  #ig-status.ok { color: #4ade80; }
+  #ig-status.err { color: #f87171; }
   #copy { background: #2563eb; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
   #copy:hover { background: #1d4ed8; }
+  #publish-all { background: #b45309; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
+  #publish-all:hover { background: #92400e; }
   main { padding: 24px; max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
   .post { background: #1a1a1a; border: 2px solid #333; border-radius: 12px; padding: 18px; transition: border-color .15s; }
   .post.approved { border-color: #22c55e; }
@@ -64,7 +72,7 @@ export function generateReviewReport(dir: string): string {
   .slides { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
   .slides img { height: 200px; border-radius: 8px; flex: 0 0 auto; }
   .caption { background: #101010; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; max-height: 260px; overflow-y: auto; }
-  .actions { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
   .actions button { border: 0; border-radius: 8px; padding: 9px 16px; font-size: 13px; cursor: pointer; }
   .approve { background: #14532d; color: #bbf7d0; }
   .approve:hover { background: #166534; }
@@ -72,6 +80,10 @@ export function generateReviewReport(dir: string): string {
   .skip { background: #3f3f46; color: #d4d4d8; }
   .skip:hover { background: #52525b; }
   .post.skipped .skip { background: #71717a; color: #18181b; font-weight: 700; }
+  .publish { background: #7c2d12; color: #fed7aa; }
+  .publish:hover { background: #9a3412; }
+  .publish:disabled { opacity: .5; cursor: wait; }
+  .publish.done { background: #16a34a; color: #fff; }
   .status { font-size: 12px; color: #888; margin-left: auto; letter-spacing: 1px; }
   .post.approved .status { color: #4ade80; }
 </style>
@@ -79,17 +91,40 @@ export function generateReviewReport(dir: string): string {
 <body>
 <header>
   <h1>Review ${esc(dir)}</h1>
+  <span id="ig-status">menghubungi server…</span>
   <span id="count"></span>
   <button id="copy">Salin caption yang disetujui</button>
+  <button id="publish-all">🚀 Unggah semua disetujui</button>
 </header>
 <main>
 ${cards}
 </main>
 <script>
   const KEY = 'ig-review:' + location.pathname;
+  const API = 'http://127.0.0.1:8787';
+  const DIR = ${JSON.stringify(dirName)};
   let state = {};
   try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
   const posts = document.querySelectorAll('.post');
+
+  async function api(path, opts) {
+    const r = await fetch(API + path, opts);
+    return r.json();
+  }
+
+  const igStatus = document.getElementById('ig-status');
+  api('/api/status').then((s) => {
+    if (s.ok) {
+      igStatus.textContent = s.dryRun ? 'IG: simulasi (dry-run)' : 'IG: @' + s.username;
+      igStatus.classList.add('ok');
+    } else {
+      igStatus.textContent = s.error || 'server tidak aktif';
+      igStatus.classList.add('err');
+    }
+  }).catch(() => {
+    igStatus.textContent = 'server tidak aktif (npm run serve)';
+    igStatus.classList.add('err');
+  });
 
   function refresh() {
     let approved = 0, skipped = 0;
@@ -108,6 +143,26 @@ ${cards}
     localStorage.setItem(KEY, JSON.stringify(state));
   }
 
+  async function publish(post, btn) {
+    btn.disabled = true;
+    btn.textContent = '…';
+    const r = await api('/api/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: DIR, postId: post.dataset.id }),
+    });
+    btn.disabled = false;
+    if (r.ok) {
+      state[post.dataset.id + ':published'] = true;
+      btn.textContent = r.dryRun ? '✓ Simulasi OK' : '✓ Terunggah';
+      btn.classList.add('done');
+    } else {
+      btn.textContent = '✗ Gagal';
+      alert('Gagal unggah: ' + (r.error || 'unknown'));
+    }
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
   document.addEventListener('click', e => {
     const btn = e.target.closest('button.approve, button.skip');
     if (!btn) return;
@@ -118,6 +173,21 @@ ${cards}
       state[id] = state[id] === 'skipped' ? 'pending' : 'skipped';
     }
     refresh();
+  });
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button.publish');
+    if (!btn) return;
+    publish(btn.closest('.post'), btn);
+  });
+
+  document.getElementById('publish-all').addEventListener('click', async () => {
+    const approved = [...posts].filter(p => state[p.dataset.id] === 'approved');
+    if (!approved.length) { alert('Setujui dulu post yang mau diunggah.'); return; }
+    for (const post of approved) {
+      const btn = post.querySelector('button.publish');
+      await publish(post, btn);
+    }
   });
 
   document.getElementById('copy').addEventListener('click', async () => {

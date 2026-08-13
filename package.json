@@ -9,6 +9,7 @@
     "curate": "tsx src/index.ts --curate",
     "render": "tsx src/index.ts --render",
     "render:stored": "tsx src/index.ts --render-stored",
+    "serve": "tsx src/publish/server.ts",
     "watch": "tsx src/index.ts --watch",
     "build": "tsc",
     "typecheck": "tsc --noEmit"
