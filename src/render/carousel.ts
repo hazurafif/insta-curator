@@ -36,8 +36,7 @@ function progressDots(active: number, total: number, color: string): string {
 }
 
 /** Rounded "sticker" badge with the category label (Jakarta Keras style). */
-function badge(p: Palette, y = 112): string {
-  const label = config.brand.category;
+function badge(label: string, p: Palette, y = 112): string {
   const w = measure(label, 26, fontFactors.mono) + 84;
   return `<g>
 <rect x="${PAD}" y="${y}" width="${w}" height="68" rx="34" fill="${p.accent}"/>
@@ -71,6 +70,7 @@ function coverSlide(
           `<tspan x="${PAD}" y="${startY + i * lineH}">${esc(ln)}</tspan>`,
       )
       .join('');
+    const tag = curation.category || config.brand.category;
     return doc(
       `
 <defs>
@@ -82,7 +82,7 @@ function coverSlide(
 </defs>
 <image href="${imageDataUri}" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>
 <rect x="0" y="0" width="${W}" height="${H}" fill="url(#shade)"/>
-${badge(p)}
+${badge(tag, p)}
 <text x="${PAD}" y="${startY}" font-family="${fonts.headline}" font-size="${size}" fill="#FFFFFF">${tspans}</text>
 <text x="${PAD}" y="${H - 196}" font-family="${fonts.mono}" font-size="24" fill="#FFFFFF" fill-opacity="0.75" letter-spacing="4">VIA ${esc(story.sourceName.toUpperCase())}</text>
 ${progressDots(0, total, '#FFFFFF')}
@@ -102,9 +102,10 @@ ${progressDots(0, total, '#FFFFFF')}
         `<tspan x="${PAD}" y="${startY + i * lineH}">${esc(ln)}</tspan>`,
     )
     .join('');
+  const tag = curation.category || config.brand.category;
   return doc(
     `
-${badge(p, 132)}
+${badge(tag, p, 132)}
 <text x="${PAD}" y="${startY}" font-family="${fonts.headline}" font-size="${size}" fill="${p.fg}">${tspans}</text>
 <text x="${PAD}" y="${H - 190}" font-family="${fonts.mono}" font-size="24" fill="${p.fg}" fill-opacity="0.55" letter-spacing="4">VIA ${esc(story.sourceName.toUpperCase())}</text>
 ${progressDots(0, total, p.fg)}

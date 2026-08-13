@@ -41,7 +41,7 @@ export interface Story {
   raw: string | null; // JSON string
 }
 
-/** LLM curation output (Bahasa Indonesia). */
+/** LLM curation output. */
 export interface Curation {
   hook: string;
   summary: string;
@@ -49,6 +49,8 @@ export interface Curation {
   caption: string;
   hashtags: string[];
   reelScript: string;
+  /** Kategori untuk badge di cover (TEKNOLOGI, AI, KESEHATAN, BISNIS, ...). */
+  category: string;
 }
 
 export interface CurationResult {

@@ -3,7 +3,19 @@ import { config } from '../config.js';
 
 const HOUR = 3_600_000;
 
-/** Simple relevance score (M1). LLM-based scoring replaces this in M2. */
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
+function matchesTier(host: string, domains: string[]): boolean {
+  return domains.some((d) => host === d || host.endsWith('.' + d));
+}
+
+/** Relevance score (M1). LLM-based scoring replaces this in M2. */
 export function scoreStory(s: Story): number {
   let score = 50;
 
@@ -22,6 +34,18 @@ export function scoreStory(s: Story): number {
   // Social signal (Hacker News points).
   const points = s.points ?? 0;
   if (points > 0) score += Math.min(20, Math.log10(points + 1) * 10);
+
+  // Domain reputation: prioritas media Indonesia & mainstream, penalti blog random.
+  const host = hostOf(s.canonicalUrl);
+  if (host) {
+    if (matchesTier(host, config.domainTiers.indonesia)) {
+      score += config.score.indonesiaBonus;
+    } else if (matchesTier(host, config.domainTiers.mainstream)) {
+      score += config.score.mainstreamBonus;
+    } else if (s.source === 'hackernews') {
+      score += config.score.unknownPenalty;
+    }
+  }
 
   return Math.round(score * 100) / 100;
 }

@@ -22,13 +22,60 @@ export const config = {
     { name: 'arstechnica', url: 'https://arstechnica.com/feed/' },
     { name: 'wired', url: 'https://www.wired.com/feed/rss' },
     { name: 'engadget', url: 'https://www.engadget.com/rss.xml' },
-    { name: 'cnbc-tech', url: 'https://www.cnbc.com/id/19854910/device/rss/rss.html' },
+    // Sumber Indonesia (prioritas lebih tinggi di scoring).
+    { name: 'cnn-tekno', url: 'https://www.cnnindonesia.com/teknologi/rss' },
+    { name: 'cnbc-tech', url: 'https://www.cnbcindonesia.com/tech/rss' },
+    { name: 'antara-tekno', url: 'https://www.antaranews.com/rss/tekno' },
   ],
 
   hn: {
     api: 'https://hn.algolia.com/api/v1/search_by_date',
     hitsPerPage: 100,
-    minPoints: 50,
+    minPoints: 100, // filter noise dari blog/personal project kecil
+  },
+
+  /** Domain reputation: bonus poin untuk media arus utama & Indonesia. */
+  domainTiers: {
+    indonesia: [
+      'kompas.com',
+      'detik.com',
+      'cnnindonesia.com',
+      'cnbcindonesia.com',
+      'antaranews.com',
+      'idntimes.com',
+      'kumparan.com',
+      'liputan6.com',
+      'tempo.co',
+      'bisnis.com',
+      'katadata.co.id',
+      'suara.com',
+    ],
+    mainstream: [
+      'techcrunch.com',
+      'theverge.com',
+      'arstechnica.com',
+      'wired.com',
+      'engadget.com',
+      'cnn.com',
+      'bbc.com',
+      'bbc.co.uk',
+      'reuters.com',
+      'bloomberg.com',
+      'theguardian.com',
+      'nytimes.com',
+      'ft.com',
+      'npr.org',
+      'apnews.com',
+      'wsj.com',
+      'forbes.com',
+      'businessinsider.com',
+    ],
+  },
+
+  score: {
+    indonesiaBonus: 20, // prioritas sumber Indonesia
+    mainstreamBonus: 15,
+    unknownPenalty: -8, // blog/personal site dari HN dapat penalti
   },
 
   /** Relative weight per source when scoring relevance. */

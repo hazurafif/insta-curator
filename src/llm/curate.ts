@@ -30,6 +30,7 @@ OUTPUT FORMAT:
 - caption: English — ringkasan fokus pada inti berita: apa yang terjadi, detail/angka penting, kenapa penting. Nada profesional seperti rangkuman berita, boleh panjang (4–8 kalimat). NO hashtags, NO pertanyaan penutup / CTA. Tutup secara natural.
 - hashtags: English tech hashtags, 10–15, without # (stored but not shown in the post).
 - reelScript: English — 3-second hook + 3 points + CTA.
+- category: 1 kata kategori untuk badge cover, pilih dari daftar ini: TEKNOLOGI, AI, GADGET, BISNIS, STARTUP, SAINS, KESEHATAN, GAME, SIBER, ENERGI, MOBIL, ANGKASA.
 
 Output ONLY valid JSON (no markdown/fence) with this exact schema:
 {
@@ -38,7 +39,8 @@ Output ONLY valid JSON (no markdown/fence) with this exact schema:
   "bullets": ["string", "string", "string", "string"],
   "caption": "string (with \\n as line breaks)",
   "hashtags": ["string", "string"],
-  "reelScript": "string (with \\n as line breaks)"
+  "reelScript": "string (with \\n as line breaks)",
+  "category": "string"
 }`;
 
 /** Parse JSON robustly (strip markdown fences, extract first {...} block). */
@@ -66,6 +68,7 @@ function normalizeCuration(raw: unknown): Curation {
     caption: String(r.caption ?? '').trim(),
     hashtags: toArray(r.hashtags).map((h) => h.replace(/^#/, '')),
     reelScript: String(r.reelScript ?? '').trim(),
+    category: String(r.category ?? 'TEKNOLOGI').trim().toUpperCase(),
   };
 }
 
