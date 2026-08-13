@@ -1,59 +1,53 @@
-# ig-reels — Tech News Curator → Instagram
+# insta-curator
 
-Mengumpulkan berita teknologi dari RSS + Hacker News, lalu (nanti) mengubahnya
-jadi postingan Instagram (carousel + reels) dalam Bahasa Indonesia.
+Kurator berita teknologi otomatis yang mengubah berita (RSS, Hacker News, dan
+nanti Twitter/X + Threads) menjadi postingan Instagram siap unggah: carousel
+berbahasa Indonesia lengkap dengan caption dan hashtag.
 
-See `PLAN.md` for the full architecture and roadmap, and `RESEARCH.md` for the competitor/style research (Cretivox, Folkative, USS Feed).
+## Cara kerja
 
-## Status
+1. **Kumpulkan** — ambil berita terbaru dari 6 RSS feed + Hacker News tiap 30 menit, dedupe dan skor otomatis, simpan ke SQLite.
+2. **Kurasi** — LLM (DeepSeek V4 via OpenCode Go) memilih 5 berita terbaik, lalu menulis hook, caption, hashtag, dan skrip reels dalam Bahasa Indonesia.
+3. **Render** — generate carousel PNG (cover foto + isi + CTA) dengan font Archivo Black, Plus Jakarta Sans, dan Space Grotesk.
+4. **Review** — buka halaman review HTML: setujui atau lewati tiap post, lalu salin caption yang disetujui.
+5. **Unggah** — paste ke Instagram (untuk sekarang semi-manual; auto-post via Meta Graph API direncanakan).
 
-- [x] M1 — Ingestion (RSS + Hacker News → SQLite, dedupe, scoring)
-- [x] M2 — LLM curation (hook, caption, hashtags in Bahasa Indonesia) via OpenCode Go / DeepSeek V4
-- [x] M3 — Carousel rendering (image cover + max 5 slides, PNG output)
-- [ ] M4 — Review queue
-- [ ] M5 — Semi-manual posting workflow
-- [ ] M6 — Twitter/X + Threads sources
-- [ ] M7 — Reel rendering
-- [ ] M8 — Instagram Graph API auto-post
-
-## Run
+## Menjalankan
 
 ```bash
 npm install
-npm start        # run ingestion once
-npm run curate   # ingest + curate top 5 stories (LLM) and print
-npm run render   # ingest + curate + render carousel PNGs to output/
-npm run render:stored  # re-render already-curated posts (design iterations, no LLM cost)
-npm run watch    # run on a cron schedule (every 30 min)
+cp .env.example .env        # isi OPENCODE_GO_API_KEY
+npm start                   # hanya ingestion
+npm run curate              # ingestion + kurasi top 5 (print ke terminal)
+npm run render              # ingestion + kurasi + render carousel + halaman review
+npm run render:stored       # render ulang post yang sudah dikurasi (iterasi desain, tanpa biaya LLM)
+npm run watch               # ingestion terjadwal (setiap 30 menit)
 ```
 
-Data lands in `data/stories.db` (SQLite, via Node's built-in `node:sqlite`).
+Data tersimpan di `data/stories.db` (SQLite bawaan Node).
 
-### Output structure (per post)
-
-```
-output/YYYY-MM-DD/post-01/
-├── 01-cover.png   # locked: article photo + gradient + hook + badge (or typographic fallback)
-├── 02-isi.png     # full content: INTI BERITA summary + POIN PENTING list (auto-splits to 2 slides if long)
-├── 03-cta.png     # question + handle + follow CTA
-└── caption.txt    # full caption + hashtags + source
-```
-
-Max 4 slides per post; the detail lives in the caption.
-
-### LLM (M2)
-
-Curation uses the OpenCode Go gateway (OpenAI-compatible). Set in `.env`:
+## Struktur output
 
 ```
-OPENCODE_GO_API_KEY=sk-...
-OPENCODE_GO_MODEL=deepseek-v4-flash   # or deepseek-v4-pro
+output/YYYY-MM-DD/
+├── review.html             # halaman review: setujui, lewati, salin caption
+└── post-01/
+    ├── 01-cover.png        # cover foto artikel + hook
+    ├── 02-isi.png          # ringkasan + poin penting
+    ├── 03-cta.png          # handle + ajakan follow
+    └── caption.txt         # caption + hashtag + sumber
 ```
 
-DeepSeek V4 is a reasoning model, so `max_tokens` includes the reasoning tokens —
-keep it generous (default 16000).
+Maksimal 4 slide per post; detail cerita ada di caption.
 
-## Config
+## Konfigurasi
 
-Edit `src/config.ts` to add/remove RSS feeds, tweak HN thresholds, and dedup
-similarity. No API keys needed for M1.
+- `src/config.ts` — daftar feed RSS, ambang skor Hacker News, branding (handle, kategori), jumlah post per hari.
+- `.env` — kunci API LLM (lihat `.env.example`).
+- `assets/fonts/` — font yang dipakai untuk render.
+
+## Dokumentasi
+
+- [`.docs/PLAN.md`](.docs/PLAN.md) — arsitektur dan roadmap lengkap.
+- [`.docs/RESEARCH.md`](.docs/RESEARCH.md) — riset gaya akun media Indonesia (Cretivox, Folkative, USS Feed, Jakarta Keras).
+- [`.docs/MILESTONES.md`](.docs/MILESTONES.md) — status milestone.

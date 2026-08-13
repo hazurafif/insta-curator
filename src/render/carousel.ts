@@ -5,6 +5,7 @@ import type { Curation, CurationResult, Story } from '../types.js';
 import { CANVAS, fonts, fontFactors, paletteFor, textOn, weights, type Palette } from './theme.js';
 import { esc, fit, measure, stripEmoji, svgToPng, wrapText } from './svg.js';
 import { prepareCoverImage } from './image.js';
+import { generateReviewReport } from '../review/report.js';
 
 const W = CANVAS.width;
 const H = CANVAS.height;
@@ -318,5 +319,6 @@ export async function renderCarousels(
       console.warn(`[warn] render "${results[i].story.title.slice(0, 40)}":`, (e as Error).message);
     }
   }
+  generateReviewReport(dir);
   return dir;
 }

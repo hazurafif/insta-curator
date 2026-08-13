@@ -22,7 +22,7 @@ Reference study of the visual + copy style of Indonesian Instagram media account
 - Win on **hiburan (78–79%)** and **kenyamanan (72–74%)** satisfaction vs mainstream news.
 - Format: "tipografi singkat, infografis, atau video kurang dari satu menit."
 - Content is **feed-native** — consumed without leaving the app.
-- Assume the reader **already has context** → short, not detailed.
+- Assume the reader **already has context**; konten dibuat singkat, tidak detail.
 - Topics follow what's trending on TikTok / X / other platforms.
 
 ---
@@ -134,7 +134,7 @@ Observational design genre:
    The full explanation lives in the caption, not the carousel.
 2. **Cover = real image**: article photo full-bleed + dark gradient + white hook text
    + sticker badge (category pill) — like a mini poster.
-3. **Short hooks (≤5 words) → UPPERCASE** (Jakarta Keras sticker style); longer
+3. **Short hooks (≤5 words) dipakai UPPERCASE** (Jakarta Keras sticker style); longer
    hooks stay sentence case for readability.
 4. Keep Archivo Black / Plus Jakarta Sans Bold / Space Grotesk; badge text color
    auto-contrasts against the accent.
@@ -149,7 +149,7 @@ Observational design genre:
    - `0X-cta` — question + handle + follow CTA.
    - Everything else goes in the caption (`caption.txt`).
 2. **One reel template** (M7): hook overlay (first 3s) + 3 beats + CTA, Plus Jakarta Sans.
-3. **Caption generator** must output the structure in §2 (hook → isi → CTA → sumber → hashtags) in Bahasa Indonesia, colloquial tone.
+3. **Caption generator** must output the structure in §2 (hook, isi, CTA, sumber, hashtags) in Bahasa Indonesia, colloquial tone.
 4. **Design system config** (fonts, colors, sizes) lives in `src/render/theme.ts` so templates are swappable.
 
 ---

@@ -1,4 +1,4 @@
-# Tech News Curator → Instagram Pipeline
+# Tech News Curator: Pipeline Instagram
 
 Goal: automatically gather tech news from Twitter/X, Threads, RSS/articles, and other sources, curate the best stories, and turn them into Instagram posts (carousels + reels scripts) with a human-in-the-loop review step before publishing.
 
@@ -6,24 +6,14 @@ Goal: automatically gather tech news from Twitter/X, Threads, RSS/articles, and 
 
 ## 1. Architecture Overview
 
-```
-┌─────────────┐   ┌──────────────┐   ┌──────────────┐   ┌─────────────┐
-│  SOURCES    │ → │  INGESTION   │ → │  CURATION    │ → │  RENDERING  │
-│ Twitter/X   │   │  scheduler   │   │  dedupe      │   │  images     │
-│ Threads     │   │  fetchers    │   │  score       │   │  video      │
-│ RSS/Articles│   │  normalizer  │   │  LLM summary │   │  captions   │
-│ HN/Reddit   │   │  store       │   │  cluster     │   │  hashtags   │
-└─────────────┘   └──────────────┘   └──────────────┘   └─────────────┘
-                                                               │
-                                              ┌────────────────┘
-                                              ▼
-                                        ┌──────────┐   ┌─────────────┐
-                                        │  REVIEW  │ → │  PUBLISH    │
-                                        │  (human) │   │  IG Graph API│
-                                        └──────────┘   └─────────────┘
-```
+Alur data dari kiri ke kanan:
 
----
+1. **SOURCES** — Twitter/X, Threads, RSS/Artikel, HN, Reddit
+2. **INGESTION** — scheduler, fetchers, normalizer, store
+3. **CURATION** — dedupe, score, LLM summary, cluster
+4. **RENDERING** — images, video, captions, hashtags
+5. **REVIEW** — persetujuan manusia
+6. **PUBLISH** — Instagram Graph API
 
 ## 2. Sources & How to Get Them
 
@@ -53,7 +43,7 @@ Recommended RSS feeds to seed:
 - **Dedup**: `@extractus/article-extractor` + URL canonicalization + title fuzzy match.
 - **LLM**: OpenAI / Anthropic / local (Ollama) for summarization, scoring, caption writing.
 - **Rendering**: 
-  - Images: `sharp` or `satori` (JSX → SVG → PNG) for carousels
+  - Images: `sharp` or `satori` (JSX, lalu SVG, lalu PNG) for carousels
   - Video: `remotion` or FFmpeg for reels
 - **IG posting**: Meta Graph API (requires FB Developer app + IG Business/Creator account)
 
@@ -108,11 +98,11 @@ For each shortlisted story, the LLM produces:
 - 3–5 bullet summary
 - IG caption (with line breaks + emoji)
 - 10–20 hashtags
-- Optional: reel script (opening hook → 3 beats → CTA)
+- Optional: reel script (hook pembuka, 3 poin, CTA)
 
 ### Phase 5 — Rendering
 - **Carousel**: hook slide + 4–6 content slides + CTA slide, branded template.
-- **Reel**: script → text overlay + stock b-roll or simple animated slides via Remotion.
+- **Reel**: script ditambah text overlay + stock b-roll atau slide animasi sederhana via Remotion.
 
 ### Phase 6 — Review & Publish
 1. Output goes to a review queue (simple web UI, or just a Markdown/HTML report).
@@ -174,9 +164,9 @@ ig-reels/
 
 ## 8. Milestones (build order)
 
-1. **M1 — RSS + HN ingestion** (no keys needed). Fetch, normalize, store, dedupe. → *proves the data flows*
+1. **M1 — RSS + HN ingestion** (no keys needed). Fetch, normalize, store, dedupe. Membuktikan alur data jalan end-to-end.
 2. **M2 — LLM curation** on stored stories. Generate hooks, captions, hashtags.
-3. **M3 — Carousel rendering** with a branded template → output PNGs + captions.
+3. **M3 — Carousel rendering** dengan template ber-brand; menghasilkan PNG + caption.
 4. **M4 — Review queue** (HTML/Markdown report). Manual approve.
 5. **M5 — Semi-manual publishing** workflow (export folder + checklist).
 6. **M6 — Add Twitter/X + Threads** sources (needs keys/scraping).
@@ -193,7 +183,7 @@ ig-reels/
 | Format | Both carousels + reels |
 | Volume | 5 posts/day |
 | Language | Bahasa Indonesia (prompts, captions, hooks, hashtags all in ID) |
-| IG account | To be created later → build up to rendering first, **semi-manual posting** for now |
+| IG account | To be created later; bangun sampai tahap rendering dulu, **semi-manual posting** untuk sekarang |
 
 Implications:
 - LLM curation prompts must be written in Bahasa Indonesia.
@@ -219,7 +209,7 @@ Implications:
 A minimal working slice:
 1. Node/TS project with a cron that pulls 5 RSS feeds + Hacker News.
 2. Normalize + dedupe into SQLite.
-3. One LLM call per shortlisted story → hook + caption + hashtags.
+3. One LLM call per shortlisted story, menghasilkan hook + caption + hashtags.
 4. Render a 6-slide carousel to `output/`.
 5. Print a review report.
 

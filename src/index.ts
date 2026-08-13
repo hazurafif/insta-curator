@@ -21,7 +21,8 @@ async function run(mode: Mode): Promise<void> {
         return;
       }
       const outDir = await renderCarousels(stored, 'output/design-v5');
-      console.log(`\n🖼️  Re-rendered ${stored.length} stored posts to: ${outDir}`);
+      console.log(`\n🖼️  Render ulang ${stored.length} post ke: ${outDir}`);
+      console.log(`📋 Halaman review: ${outDir}/review.html`);
       return;
     }
 
@@ -51,6 +52,7 @@ async function run(mode: Mode): Promise<void> {
       if (mode.render) {
         const outDir = await renderCarousels(results);
         console.log(`\n🖼️  Carousel PNGs written to: ${outDir}`);
+        console.log(`📋 Halaman review: ${outDir}/review.html`);
       }
     }
   } finally {
